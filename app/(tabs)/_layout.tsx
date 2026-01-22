@@ -1,7 +1,16 @@
+import { heavy } from '@/utils/haptics'
+import { usePathname } from 'expo-router'
 import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs'
+import { useEffect } from 'react'
 import { PlatformColor } from 'react-native'
 
 export default function TabLayout() {
+  const pathname = usePathname()
+
+  useEffect(() => {
+    heavy()
+  }, [pathname])
+
   return (
     <NativeTabs
       tintColor={PlatformColor('label')}
