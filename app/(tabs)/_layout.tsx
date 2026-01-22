@@ -1,35 +1,50 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-
-import { HapticTab } from '@/components/haptic-tab';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Icon, Label, NativeTabs } from 'expo-router/unstable-native-tabs'
+import { PlatformColor } from 'react-native'
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        headerShown: false,
-        tabBarButton: HapticTab,
-      }}>
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="house.fill" color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="explore"
-        options={{
-          title: 'Explore',
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
-  );
+    <NativeTabs
+      tintColor={PlatformColor('label')}
+      iconColor={{
+        default: PlatformColor('secondaryLabel') // Unselected icon color
+      }}
+      labelStyle={{
+        color: PlatformColor('label')
+      }}
+    >
+      {/* Feed Tab */}
+      <NativeTabs.Trigger name="index">
+        <Icon sf="house.fill" />
+        <Label>Feed</Label>
+      </NativeTabs.Trigger>
+
+      {/* Games Tab */}
+      <NativeTabs.Trigger name="games">
+        <Icon sf="gamecontroller.fill" />
+        <Label>Games</Label>
+      </NativeTabs.Trigger>
+
+      {/* Groups Tab */}
+      <NativeTabs.Trigger name="groups">
+        <Icon sf="person.3.fill" />
+        <Label>Groups</Label>
+      </NativeTabs.Trigger>
+
+      {/* Notifications Tab */}
+      {/*
+      <NativeTabs.Trigger name="notifications">
+        <Icon sf="bell.fill" />
+        <Label>Notifications</Label>
+      </NativeTabs.Trigger>
+      */}
+
+      {/* Friends Tab */}
+      {/*
+      <NativeTabs.Trigger name="friends">
+        <Icon sf="person.fill" />
+        <Label>Friends</Label>
+      </NativeTabs.Trigger>
+      */}
+    </NativeTabs>
+  )
 }
