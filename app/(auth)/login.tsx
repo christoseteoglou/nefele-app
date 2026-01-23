@@ -4,10 +4,12 @@ import LinkText from "@/components/ui/link-text";
 import SocialLoginButton from "@/components/ui/social-login-button";
 import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
+import { signInWithEmail } from "@/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -19,12 +21,26 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
-  const handleSignIn = () => {
-    // TODO: Implement sign in logic
-    console.log("Sign in:", { email, password });
+  const handleSignIn = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please enter email and password");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await signInWithEmail(email, password);
+      router.replace("/(tabs)");
+    } catch (error: any) {
+      const errorMessage = error?.message || "Failed to sign in";
+      Alert.alert("Sign In Failed", errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -95,8 +111,9 @@ export default function LoginScreen() {
 
       {/* Sign In Button */}
       <Button
-        title="Sign In"
+        title={isLoading ? "Signing In..." : "Sign In"}
         onPress={handleSignIn}
+        disabled={isLoading || !email || !password}
       />
 
       {/* Sign Up Link */}

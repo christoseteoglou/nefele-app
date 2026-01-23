@@ -2,6 +2,7 @@
 
 # dependencies
 node_modules/
+package-lock.json
 
 # Expo
 .expo/
@@ -48,3 +49,7 @@ app-example
 # Sentry
 .sentryclirc
 sentry.properties
+
+# Firebase
+GoogleService-Info.plist
+google-services.json

@@ -1,5 +1,6 @@
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { signOut } from '@/services/firebase'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
@@ -16,6 +17,15 @@ const stats = [
 export default function ProfileScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+
+  const handleLogout = async () => {
+    try {
+      await signOut()
+      router.replace('/(auth)/login')
+    } catch (error) {
+      console.error('Logout error:', error)
+    }
+  }
 
   return (
     <SafeAreaView
@@ -84,6 +94,24 @@ export default function ProfileScreen() {
             </Text>
           </View>
         ))}
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          style={[
+            styles.statCard,
+            { borderColor: colors.error, backgroundColor: colors.background }
+          ]}
+          onPress={handleLogout}
+          activeOpacity={0.7}
+        >
+          <View style={styles.statLeft}>
+            <Ionicons name="log-out-outline" size={18} color={colors.error} />
+            <Text style={[styles.statLabel, { color: colors.error }]}>
+              Log Out
+            </Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.error} />
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   )

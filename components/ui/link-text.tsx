@@ -1,6 +1,6 @@
-import { Colors } from "@/constants/theme";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface LinkTextProps {
   text: string;
@@ -10,25 +10,32 @@ interface LinkTextProps {
 
 export default function LinkText({ text, linkText, onPress }: LinkTextProps) {
   const colorScheme = useColorScheme();
-  const colors = Colors[colorScheme ?? "light"];
+  const colors = Colors[colorScheme ?? 'light'];
 
   return (
-    <Text style={styles.container}>
-      {text}
+    <View style={styles.container}>
+      <Text style={[styles.text, { color: colors.text }]}>
+        {text}{' '}
+      </Text>
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <Text style={[styles.link, { color: colors.purple }]}>{linkText}</Text>
       </TouchableOpacity>
-    </Text>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    fontSize: 14,
-    textAlign: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginTop: 16,
   },
+  text: {
+    fontSize: 14,
+  },
   link: {
-    fontWeight: "500",
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
