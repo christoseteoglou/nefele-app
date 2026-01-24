@@ -1,22 +1,53 @@
+import { useCallback, useState } from 'react'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { signOut } from '@/services/firebase'
+import {
+  signOut,
+  getCurrentUser,
+  getUserProfile,
+  UserDocument
+} from '@/services/firebase'
 import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { router, useFocusEffect } from 'expo-router'
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-const stats = [
-  { id: '1', label: 'Activity Score', value: '381', icon: 'stats-chart' },
-  { id: '2', label: 'No Show Rate', value: '0%', icon: 'pie-chart' },
-  { id: '3', label: 'Power Level', value: '2039', icon: 'flash' },
-  { id: '4', label: 'Location', value: 'Berlin', icon: 'globe' },
-  { id: '5', label: 'Avg. Weekly Hours', value: '1–10', icon: 'time' }
-]
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+
+  const [isLoading, setIsLoading] = useState(true)
+  const [userData, setUserData] = useState<UserDocument | null>(null)
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile()
+    }, [])
+  )
+
+  const loadProfile = async () => {
+    try {
+      const user = getCurrentUser()
+      if (!user) {
+        router.replace('/(auth)/login')
+        return
+      }
+
+      const data = await getUserProfile(user.uid)
+      setUserData(data)
+    } catch (error) {
+      console.error('Error loading profile:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -25,6 +56,19 @@ export default function ProfileScreen() {
     } catch (error) {
       console.error('Logout error:', error)
     }
+  }
+
+  const profile = userData?.profile
+
+  if (isLoading) {
+    return (
+      <SafeAreaView
+        style={[styles.container, styles.centered, { backgroundColor: colors.background }]}
+        edges={['top', 'bottom']}
+      >
+        <ActivityIndicator size="large" color={colors.purple} />
+      </SafeAreaView>
+    )
   }
 
   return (
@@ -49,6 +93,7 @@ export default function ProfileScreen() {
         <TouchableOpacity
           style={[styles.iconButton, { backgroundColor: colors.border }]}
           activeOpacity={0.7}
+          onPress={() => router.push('/edit-profile')}
         >
           <Ionicons name="pencil" size={22} color={colors.text} />
         </TouchableOpacity>
@@ -57,43 +102,103 @@ export default function ProfileScreen() {
       {/* Profile section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarWrapper}>
-          <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+          {profile?.avatURL ? (
+            <Image
+              source={{ uri: profile.avatURL }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={[styles.avatar, { backgroundColor: colors.border }]}>
+              <Ionicons name="person" size={40} color={colors.placeholder} />
+            </View>
+          )}
           <View
             style={[styles.statusDot, { borderColor: colors.background }]}
           />
         </View>
 
-        <Text style={[styles.name, { color: colors.text }]}>Eatoldglue</Text>
+        <Text style={[styles.name, { color: colors.text }]}>
+          {profile?.displayName || 'No Name'}
+        </Text>
         <Text style={[styles.email, { color: colors.placeholder }]}>
-          eatoldglue@gmail.com
+          {userData?.email || ''}
         </Text>
       </View>
 
-      {/* Stats */}
+      {/* Profile Info */}
       <View style={styles.statsList}>
-        {stats.map(item => (
+        {profile?.bio ? (
           <View
-            key={item.id}
             style={[
               styles.statCard,
               { borderColor: colors.border, backgroundColor: colors.background }
             ]}
           >
             <View style={styles.statLeft}>
-              <Ionicons
-                name={item.icon as any}
-                size={18}
-                color={colors.purple}
-              />
+              <Ionicons name="chatbubble-outline" size={18} color={colors.purple} />
               <Text style={[styles.statLabel, { color: colors.text }]}>
-                {item.label}
+                {profile.bio}
+              </Text>
+            </View>
+          </View>
+        ) : null}
+
+        {profile?.timezone ? (
+          <View
+            style={[
+              styles.statCard,
+              { borderColor: colors.border, backgroundColor: colors.background }
+            ]}
+          >
+            <View style={styles.statLeft}>
+              <Ionicons name="globe-outline" size={18} color={colors.purple} />
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Timezone
               </Text>
             </View>
             <Text style={[styles.statValue, { color: colors.text }]}>
-              {item.value}
+              {profile.timezone}
             </Text>
           </View>
-        ))}
+        ) : null}
+
+        {profile?.platforms && profile.platforms.length > 0 ? (
+          <View
+            style={[
+              styles.statCard,
+              { borderColor: colors.border, backgroundColor: colors.background }
+            ]}
+          >
+            <View style={styles.statLeft}>
+              <Ionicons name="game-controller-outline" size={18} color={colors.purple} />
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Platforms
+              </Text>
+            </View>
+            <Text style={[styles.statValue, { color: colors.text }]}>
+              {profile.platforms.join(', ')}
+            </Text>
+          </View>
+        ) : null}
+
+        {profile?.playTimes && profile.playTimes.length > 0 ? (
+          <View
+            style={[
+              styles.statCard,
+              { borderColor: colors.border, backgroundColor: colors.background }
+            ]}
+          >
+            <View style={styles.statLeft}>
+              <Ionicons name="time-outline" size={18} color={colors.purple} />
+              <Text style={[styles.statLabel, { color: colors.text }]}>
+                Play Times
+              </Text>
+            </View>
+            <Text style={[styles.statValue, { color: colors.text }]}>
+              {profile.playTimes.join(', ')}
+            </Text>
+          </View>
+        ) : null}
 
         {/* Logout Button */}
         <TouchableOpacity
@@ -120,6 +225,10 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1
+  },
+  centered: {
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   header: {
     flexDirection: 'row',
@@ -153,7 +262,9 @@ const styles = StyleSheet.create({
   avatar: {
     width: 96,
     height: 96,
-    borderRadius: 48
+    borderRadius: 48,
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   statusDot: {
     position: 'absolute',

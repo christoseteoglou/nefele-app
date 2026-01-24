@@ -1,5 +1,7 @@
+import Avatar from '@/components/ui/avatar'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useUserProfile } from '@/hooks/use-user-profile'
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
 import { useState } from 'react'
@@ -52,6 +54,7 @@ export default function GamesScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const [selectedTab, setSelectedTab] = useState('Group Games')
   const insets = useSafeAreaInsets()
+  const { profile } = useUserProfile()
 
   const tabs = ['Public Games', 'Group Games', 'My Games']
 
@@ -72,7 +75,7 @@ export default function GamesScreen() {
       >
         <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={() => router.push('/profile')}>
-            <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+            <Avatar uri={profile?.avatURL} size={32} />
           </TouchableOpacity>
         </View>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Games</Text>

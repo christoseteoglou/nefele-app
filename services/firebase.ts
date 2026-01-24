@@ -15,6 +15,9 @@ import {
   getFirestore,
   collection,
   doc,
+  getDoc,
+  setDoc,
+  serverTimestamp,
   Firestore,
 } from 'firebase/firestore';
 import {
@@ -84,3 +87,46 @@ export const getDocument = (collectionPath: string, docId: string) =>
 
 // Storage helpers
 export const getStorageRef = (path: string) => ref(firebaseStorage, path);
+
+// User Profile types
+export interface UserProfile {
+  displayName: string;
+  bio: string;
+  age: number;
+  avatURL: string;
+  timezone: string;
+  platforms: string[];
+  playTimes: string[];
+  preferredGames: string[];
+  tags: string[];
+}
+
+export interface UserDocument {
+  email: string;
+  groupIds: string[];
+  lastActiveAt: Date;
+  profile: UserProfile;
+  updatedAt: Date;
+}
+
+// User Profile helpers
+export const getUserProfile = async (uid: string): Promise<UserDocument | null> => {
+  const docRef = doc(db, 'users', uid);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    return docSnap.data() as UserDocument;
+  }
+  return null;
+};
+
+export const updateUserProfile = async (
+  uid: string,
+  profile: Partial<UserProfile>
+): Promise<void> => {
+  const docRef = doc(db, 'users', uid);
+  await setDoc(docRef, {
+    profile,
+    updatedAt: serverTimestamp(),
+  }, { merge: true });
+};

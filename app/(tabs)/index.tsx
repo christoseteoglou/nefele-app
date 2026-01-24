@@ -1,6 +1,8 @@
 import FeedPost from '@/components/feed-post'
+import Avatar from '@/components/ui/avatar'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useUserProfile } from '@/hooks/use-user-profile'
 import { router } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import {
@@ -41,6 +43,7 @@ export default function FeedScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const insets = useSafeAreaInsets()
+  const { profile } = useUserProfile()
 
   return (
     <SafeAreaView
@@ -56,7 +59,7 @@ export default function FeedScreen() {
       >
         <View style={styles.avatarContainer}>
           <TouchableOpacity onPress={() => router.push('/profile')}>
-            <View style={[styles.avatar, { backgroundColor: colors.border }]} />
+            <Avatar uri={profile?.avatURL} size={32} />
           </TouchableOpacity>
         </View>
         <Text style={[styles.headerTitle, { color: colors.text }]}>Feed</Text>

@@ -23,6 +23,8 @@ export default function InputField({
   rightLabelColor,
   rightIcon,
   onRightIconPress,
+  style,
+  multiline,
   ...textInputProps
 }: InputFieldProps) {
   const colorScheme = useColorScheme();
@@ -48,8 +50,11 @@ export default function InputField({
               color: colors.text,
               paddingRight: rightIcon ? 50 : 16,
             },
+            multiline && styles.multilineInput,
+            style,
           ]}
           placeholderTextColor={colors.placeholder}
+          multiline={multiline}
           {...textInputProps}
         />
         {rightIcon && (
@@ -93,6 +98,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
+  },
+  multilineInput: {
+    height: 'auto',
+    minHeight: 80,
+    paddingTop: 16,
+    paddingBottom: 16,
+    textAlignVertical: 'top',
   },
   iconContainer: {
     position: 'absolute',
