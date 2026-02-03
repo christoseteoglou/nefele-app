@@ -4,11 +4,12 @@ import {
   DefaultTheme,
   ThemeProvider
 } from '@react-navigation/native'
-import { Stack } from 'expo-router'
+import { Redirect, Stack, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import 'react-native-reanimated'
 import * as Sentry from '@sentry/react-native'
 import Constants from 'expo-constants'
+import { AppProvider, useApp } from '@/context/AppContext'
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -39,13 +40,20 @@ Sentry.init({
   // spotlight: __DEV__,
 })
 
-export default Sentry.wrap(function RootLayout() {
+function RootLayoutNav() {
   const colorScheme = useColorScheme()
+  const { state } = useApp()
+  const segments = useSegments()
+
+  const inAuthGroup = segments[0] === '(auth)'
+
+  // Determine if we need to redirect
+  const shouldRedirectToLogin = !state.isAuthLoading && !state.isAuthenticated && !inAuthGroup
+  const shouldRedirectToHome = !state.isAuthLoading && state.isAuthenticated && inAuthGroup
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack
-        initialRouteName="(auth)"
         screenOptions={{
           headerShown: false
         }}
@@ -57,7 +65,17 @@ export default Sentry.wrap(function RootLayout() {
           options={{ presentation: 'modal', title: 'Modal' }}
         />
       </Stack>
+      {shouldRedirectToLogin && <Redirect href="/(auth)/login" />}
+      {shouldRedirectToHome && <Redirect href="/(tabs)" />}
       <StatusBar style="auto" />
     </ThemeProvider>
+  )
+}
+
+export default Sentry.wrap(function RootLayout() {
+  return (
+    <AppProvider>
+      <RootLayoutNav />
+    </AppProvider>
   )
 })

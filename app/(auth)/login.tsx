@@ -6,10 +6,13 @@ import { Colors } from "@/constants/theme";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { signInWithEmail } from "@/services/firebase";
 import { Ionicons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Alert,
+  Image,
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
@@ -22,6 +25,9 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [tapCount, setTapCount] = useState(0);
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
+  const lastTapTime = useRef(0);
   const colorScheme = useColorScheme();
   const colors = Colors[colorScheme ?? "light"];
 
@@ -55,6 +61,24 @@ export default function LoginScreen() {
   const handleSocialLogin = (provider: string) => {
     // TODO: Implement social login
     console.log("Social login:", provider);
+  };
+
+  const handleVersionTap = () => {
+    const now = Date.now();
+    // Reset count if more than 2 seconds since last tap
+    if (now - lastTapTime.current > 2000) {
+      setTapCount(1);
+    } else {
+      setTapCount((prev) => {
+        const newCount = prev + 1;
+        if (newCount >= 5) {
+          setShowEasterEgg(true);
+          return 0;
+        }
+        return newCount;
+      });
+    }
+    lastTapTime.current = now;
   };
 
   return (
@@ -123,6 +147,9 @@ export default function LoginScreen() {
         onPress={handleSignUp}
       />
 
+      {/* Spacer to push social login to bottom */}
+      <View style={styles.spacer} />
+
       {/* Divider */}
       <View style={styles.dividerContainer}>
         <View
@@ -161,6 +188,33 @@ export default function LoginScreen() {
           />
         </View>
       </View>
+
+      {/* Version */}
+      <TouchableOpacity onPress={handleVersionTap} activeOpacity={0.7}>
+        <Text style={[styles.version, { color: colors.placeholder }]}>
+          v{Constants.expoConfig?.version}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Easter Egg Modal */}
+      <Modal
+        visible={showEasterEgg}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowEasterEgg(false)}
+      >
+        <TouchableOpacity
+          style={styles.easterEggOverlay}
+          activeOpacity={1}
+          onPress={() => setShowEasterEgg(false)}
+        >
+          <Image
+            source={require("@/assets/images/easter_egg_nefele.png")}
+            style={styles.easterEggImage}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
+      </Modal>
     </ScrollView>
   );
 }
@@ -170,8 +224,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contentContainer: {
+    flexGrow: 1,
     padding: 20,
     paddingTop: 60,
+  },
+  spacer: {
+    flex: 1,
+    minHeight: 40,
   },
   title: {
     fontSize: 24,
@@ -218,5 +277,20 @@ const styles = StyleSheet.create({
   },
   socialButtonSpacer: {
     width: 12,
+  },
+  version: {
+    textAlign: "center",
+    fontSize: 12,
+    marginTop: 24,
+  },
+  easterEggOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.85)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  easterEggImage: {
+    width: 200,
+    height: 200,
   },
 });

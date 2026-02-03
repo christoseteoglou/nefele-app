@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
@@ -17,13 +17,9 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import ChipSelect from '@/components/ui/chip-select'
 import InputField from '@/components/ui/input-field'
 import { Colors } from '@/constants/theme'
+import { useApp } from '@/context/AppContext'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import {
-  getCurrentUser,
-  getUserProfile,
-  updateUserProfile,
-  UserProfile
-} from '@/services/firebase'
+import { updateUserProfile, UserProfile } from '@/services/firebase'
 import { error as hapticError, success as hapticSuccess } from '@/utils/haptics'
 
 const TIMEZONE_OPTIONS = ['EU', 'NA East', 'NA West', 'Asia', 'OCE']
@@ -62,56 +58,27 @@ const GAME_OPTIONS = [
 export default function EditProfileScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+  const { state, dispatch } = useApp()
+  const { profile: currentProfile, user } = state
 
-  const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
-  // Form state
-  const [displayName, setDisplayName] = useState('')
-  const [bio, setBio] = useState('')
-  const [age, setAge] = useState('')
-  const [avatURL, setAvatURL] = useState('')
-  const [timezone, setTimezone] = useState<string[]>([])
-  const [platforms, setPlatforms] = useState<string[]>([])
-  const [playTimes, setPlayTimes] = useState<string[]>([])
-  const [tags, setTags] = useState<string[]>([])
-  const [preferredGames, setPreferredGames] = useState<string[]>([])
-
-  useEffect(() => {
-    loadProfile()
-  }, [])
-
-  const loadProfile = async () => {
-    try {
-      const user = getCurrentUser()
-      if (!user) {
-        router.replace('/(auth)/login')
-        return
-      }
-
-      const userData = await getUserProfile(user.uid)
-      if (userData?.profile) {
-        const profile = userData.profile
-        setDisplayName(profile.displayName || '')
-        setBio(profile.bio || '')
-        setAge(profile.age?.toString() || '')
-        setAvatURL(profile.avatURL || '')
-        setTimezone(profile.timezone ? [profile.timezone] : [])
-        setPlatforms(profile.platforms || [])
-        setPlayTimes(profile.playTimes || [])
-        setTags(profile.tags || [])
-        setPreferredGames(profile.preferredGames || [])
-      }
-    } catch (err) {
-      console.error('Error loading profile:', err)
-      Alert.alert('Error', 'Failed to load profile data')
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  // Form state - initialize from context
+  const [displayName, setDisplayName] = useState(currentProfile?.displayName || '')
+  const [bio, setBio] = useState(currentProfile?.bio || '')
+  const [age, setAge] = useState(currentProfile?.age?.toString() || '')
+  const [avatURL, setAvatURL] = useState(currentProfile?.avatURL || '')
+  const [timezone, setTimezone] = useState<string[]>(
+    currentProfile?.timezone ? [currentProfile.timezone] : []
+  )
+  const [platforms, setPlatforms] = useState<string[]>(currentProfile?.platforms || [])
+  const [playTimes, setPlayTimes] = useState<string[]>(currentProfile?.playTimes || [])
+  const [tags, setTags] = useState<string[]>(currentProfile?.tags || [])
+  const [preferredGames, setPreferredGames] = useState<string[]>(
+    currentProfile?.preferredGames || []
+  )
 
   const handleSave = async () => {
-    const user = getCurrentUser()
     if (!user) return
 
     setIsSaving(true)
@@ -129,6 +96,10 @@ export default function EditProfileScreen() {
       }
 
       await updateUserProfile(user.uid, profileData)
+
+      // Update global state immediately
+      dispatch({ type: 'UPDATE_PROFILE', payload: profileData })
+
       hapticSuccess()
       router.back()
     } catch (err) {
@@ -140,7 +111,7 @@ export default function EditProfileScreen() {
     }
   }
 
-  if (isLoading) {
+  if (state.isProfileLoading) {
     return (
       <SafeAreaView
         style={[

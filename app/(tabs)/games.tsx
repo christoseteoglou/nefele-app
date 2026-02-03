@@ -1,9 +1,7 @@
-import Avatar from '@/components/ui/avatar'
+import Header from '@/components/ui/header'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useUserProfile } from '@/hooks/use-user-profile'
 import { Ionicons } from '@expo/vector-icons'
-import { router } from 'expo-router'
 import { useState } from 'react'
 import {
   ScrollView,
@@ -54,7 +52,6 @@ export default function GamesScreen() {
   const colors = Colors[colorScheme ?? 'light']
   const [selectedTab, setSelectedTab] = useState('Group Games')
   const insets = useSafeAreaInsets()
-  const { profile } = useUserProfile()
 
   const tabs = ['Public Games', 'Group Games', 'My Games']
 
@@ -63,29 +60,10 @@ export default function GamesScreen() {
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      {/* Header */}
-      <View
-        style={[
-          styles.header,
-          {
-            backgroundColor: colors.background,
-            borderBottomColor: colors.border
-          }
-        ]}
-      >
-        <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Avatar uri={profile?.avatURL} size={32} />
-          </TouchableOpacity>
-        </View>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Games</Text>
-        <TouchableOpacity
-          style={[styles.searchButton, { borderColor: colors.border }]}
-          activeOpacity={0.7}
-        >
-          <Ionicons name="search" size={22} color={colors.text} />
-        </TouchableOpacity>
-      </View>
+      <Header
+        title="Games"
+        rightAction={{ icon: 'search', onPress: () => {} }}
+      />
 
       {/* Tabs */}
       <View style={styles.tabContainer}>
@@ -203,36 +181,6 @@ export default function GamesScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1
-  },
-  avatarContainer: {
-    width: 40
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center'
-  },
-  searchButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1
   },
   tabContainer: {
     flexDirection: 'row',

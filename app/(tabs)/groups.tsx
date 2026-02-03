@@ -1,15 +1,7 @@
-import Avatar from '@/components/ui/avatar'
+import Header from '@/components/ui/header'
 import { Colors } from '@/constants/theme'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useUserProfile } from '@/hooks/use-user-profile'
-import { router } from 'expo-router'
-import {
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View
-} from 'react-native'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 
 const groups = [
@@ -22,26 +14,13 @@ export default function GroupsScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
   const insets = useSafeAreaInsets()
-  const { profile } = useUserProfile()
 
   return (
     <SafeAreaView
       style={[styles.container, { backgroundColor: colors.background }]}
       edges={['top', 'bottom']}
     >
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background }]}>
-        <View style={styles.avatarContainer}>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Avatar uri={profile?.avatURL} size={32} />
-          </TouchableOpacity>
-        </View>
-        <Text style={[styles.headerTitle, { color: colors.text }]}>Groups</Text>
-        <View style={styles.headerRightSpacer} />
-      </View>
-
-      {/* Divider */}
-      <View style={[styles.divider, { backgroundColor: colors.border }]} />
+      <Header title="Groups" />
 
       {/* Group Cards */}
       <ScrollView
@@ -68,33 +47,6 @@ export default function GroupsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12
-  },
-  avatarContainer: {
-    width: 40
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center'
-  },
-  headerRightSpacer: {
-    width: 40
-  },
-  divider: {
-    height: 1
   },
   list: {
     paddingHorizontal: 16,

@@ -1,17 +1,11 @@
-import { useCallback, useState } from 'react'
+import Avatar from '@/components/ui/avatar'
 import { Colors } from '@/constants/theme'
+import { useApp } from '@/context/AppContext'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import {
-  signOut,
-  getCurrentUser,
-  getUserProfile,
-  UserDocument
-} from '@/services/firebase'
 import { Ionicons } from '@expo/vector-icons'
-import { router, useFocusEffect } from 'expo-router'
+import { router } from 'expo-router'
 import {
   ActivityIndicator,
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,45 +16,20 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 export default function ProfileScreen() {
   const colorScheme = useColorScheme()
   const colors = Colors[colorScheme ?? 'light']
+  const { state, signOut } = useApp()
 
-  const [isLoading, setIsLoading] = useState(true)
-  const [userData, setUserData] = useState<UserDocument | null>(null)
-
-  useFocusEffect(
-    useCallback(() => {
-      loadProfile()
-    }, [])
-  )
-
-  const loadProfile = async () => {
-    try {
-      const user = getCurrentUser()
-      if (!user) {
-        router.replace('/(auth)/login')
-        return
-      }
-
-      const data = await getUserProfile(user.uid)
-      setUserData(data)
-    } catch (error) {
-      console.error('Error loading profile:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { userDocument: userData, profile, isProfileLoading, user } = state
 
   const handleLogout = async () => {
     try {
       await signOut()
-      router.replace('/(auth)/login')
+      // Navigation handled automatically by _layout.tsx auth redirect
     } catch (error) {
       console.error('Logout error:', error)
     }
   }
 
-  const profile = userData?.profile
-
-  if (isLoading) {
+  if (isProfileLoading) {
     return (
       <SafeAreaView
         style={[styles.container, styles.centered, { backgroundColor: colors.background }]}
@@ -102,16 +71,7 @@ export default function ProfileScreen() {
       {/* Profile section */}
       <View style={styles.profileSection}>
         <View style={styles.avatarWrapper}>
-          {profile?.avatURL ? (
-            <Image
-              source={{ uri: profile.avatURL }}
-              style={styles.avatar}
-            />
-          ) : (
-            <View style={[styles.avatar, { backgroundColor: colors.border }]}>
-              <Ionicons name="person" size={40} color={colors.placeholder} />
-            </View>
-          )}
+          <Avatar uri={profile?.avatURL} userId={user?.uid} size={96} />
           <View
             style={[styles.statusDot, { borderColor: colors.background }]}
           />
